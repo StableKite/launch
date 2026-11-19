@@ -14,9 +14,9 @@
 
 """Python package utility functions related to loading Python Launch Files."""
 
+from importlib.machinery import ModuleSpec
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec
-from importlib.util import spec_from_loader
 from pathlib import Path
 from types import ModuleType
 from typing import Text
@@ -34,9 +34,11 @@ class InvalidPythonLaunchFileError(Exception):
 def load_python_launch_file_as_module(python_launch_file_path: Union[Text, Path]) -> ModuleType:
     """Load a given Python launch file (by path) as a Python module."""
     loader = SourceFileLoader('python_launch_file', str(python_launch_file_path))
-    spec = spec_from_loader(loader.name, loader)
-    if spec is None:
-        raise RuntimeError('Failed to load module spec!')
+    spec = ModuleSpec(loader.name, loader, origin=loader.path,
+                      is_package=loader.is_package(loader.name))
+    spec.has_location = True
+    if spec.submodule_search_locations is not None:
+        spec.submodule_search_locations.append(str(Path(loader.path).parent))
     mod = module_from_spec(spec)
     loader.exec_module(mod)
     return mod

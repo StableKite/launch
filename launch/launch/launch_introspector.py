@@ -108,15 +108,17 @@ def format_action(action: Action) -> List[Text]:
         return ["EmitEvent(event='{}')".format(cast(EmitEvent, action).event.name)]
     elif is_a(action, ExecuteProcess):
         typed_action = cast(ExecuteProcess, action)
+        env = typed_action.env
+        env_items = env.items() if isinstance(env, dict) else env
         msg = 'ExecuteProcess(cmd=[{}], cwd={}, env={}, shell={})'.format(
             ', '.join([format_substitutions(x) for x in typed_action.cmd]),
             typed_action.cwd if typed_action.cwd is None else "'{}'".format(
                 format_substitutions(typed_action.cwd)
             ),
-            typed_action.env if typed_action.env is None else '{' + ', '.join(
-                ['{}: {}'.format(format_substitutions(k),  # type:ignore[misc]
+            None if env_items is None else '{' + ', '.join(
+                ['{}: {}'.format(format_substitutions(k),
                                  format_substitutions(v))
-                 for k, v in typed_action.env]
+                 for k, v in env_items]
                  ) + '}',
             typed_action.shell,
         )

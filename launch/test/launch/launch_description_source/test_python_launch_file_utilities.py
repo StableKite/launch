@@ -34,6 +34,15 @@ def test_load_python_launch_file_as_module():
         module = load_python_launch_file_as_module('does_not_exist')
 
 
+def test_load_python_source_with_custom_extension(tmp_path):
+    source = tmp_path / 'example.launch'
+    source.write_text("value = 'launch source'\n", encoding='utf-8')
+
+    module = load_python_launch_file_as_module(source)
+    assert module.value == 'launch source'
+    assert Path(module.__file__) == source
+
+
 def test_get_launch_description_from_python_launch_file():
     """Test get_launch_description_from_python_launch_file()."""
     this_dir = Path(__file__).parent

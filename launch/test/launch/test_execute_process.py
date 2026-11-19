@@ -31,6 +31,7 @@ from launch.actions.shutdown_action import Shutdown
 from launch.actions.timer_action import TimerAction
 from launch.event_handlers.on_process_start import OnProcessStart
 from launch.events.shutdown import Shutdown as ShutdownEvent
+from launch.launch_introspector import format_action
 from launch.substitutions.launch_configuration import LaunchConfiguration
 
 import osrf_pycommon
@@ -64,6 +65,15 @@ def test_execute_process_with_env(test_input, expected):
     assert ('TEST_NEW_ENV' in env) is expected[1]
     if expected[1]:
         assert env['TEST_NEW_ENV'] == '2'
+
+
+def test_format_process_environment_before_and_after_preparation():
+    process = ExecuteProcess(cmd=[sys.executable], env={'TEST_SETTING': 'value'})
+
+    assert 'TEST_SETTING' in format_action(process)[0]
+    process.process_description.prepare(LaunchContext(), process)
+    assert 'TEST_SETTING' in format_action(process)[0]
+    assert 'value' in format_action(process)[0]
 
 
 def test_execute_process_with_on_exit_behavior():
